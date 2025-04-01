@@ -1,15 +1,37 @@
+local configFileWatcher = nil
+
+local logger = hs.logger.new("reload", "debug")
+function reloadConfig(files)
+	hs.alert.show("reload")
+	local doReload = false
+	for _, file in pairs(files) do
+		logger.i(file:sub(-4))
+		if file:sub(-4) == ".lua" then
+			doReload = true
+		end
+	end
+
+	hs.notify.new({ title = "Hammerspoon", informativeText = "Configuration rechargée" }):send()
+	if doReload then
+		hs.reload()
+	end
+end
+
+-- Dossier à surveiller (celui où se trouve init.lua)
+local configPath = os.getenv("HOME") .. "/.hammerspoon/"
+configFileWatcher = hs.pathwatcher.new(configPath, reloadConfig):start()
+
 hs.hotkey.bind({ "cmd", "shift" }, "T", function()
 	hs.application.launchOrFocus("WezTerm")
 end)
-local logger = hs.logger.new("reload", "debug")
 
 hs.console.clearConsole()
 
 function getLightData()
 	res, body, headers = hs.http.get("http://192.168.50.202/data", nil)
-	logger.d(body)
+	--	logger.d(body)
 	local json = hs.json.decode(body)
-	hs.alert.show("Jour : " .. json["day"] .. "Nuit : " .. json["night"])
+	hs.alert.show("Jour : " .. json["day"] .. " | Nuit : " .. json["night"])
 end
 
 function choosehandle(f)
@@ -58,8 +80,8 @@ local choices = {
 	},
 }
 
-local choose = hs.chooser.new(choosehandle)
 hs.hotkey.bind({ "ctrl", "shift" }, "L", function()
+	local choose = hs.chooser.new(choosehandle)
 	choose:choices(choices)
 	choose:show()
 end)
@@ -132,24 +154,3 @@ hs.hotkey.bind({ "cmd", "alt", "ctrl" }, "R", function()
 	hs.reload()
 	hs.alert.show("Config rechargée")
 end)
-
-local configFileWatcher = nil
-
-function reloadConfig(files)
-	hs.alert.show("reload")
-	local doReload = false
-	for _, file in pairs(files) do
-		if file:sub(-4) == ".lua" then
-			doReload = true
-		end
-	end
-
-	hs.notify.new({ title = "Hammerspoon", informativeText = "Configuration rechargée" }):send()
-	if doReload then
-		hs.reload()
-	end
-end
-
--- Dossier à surveiller (celui où se trouve init.lua)
-local configPath = os.getenv("HOME") .. "/.hammerspoon/"
-configFileWatcher = hs.pathwatcher.new(configPath, reloadConfig):start()
