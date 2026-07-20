@@ -17,11 +17,13 @@ require("hs.ipc").cliInstall("/opt/homebrew")
 -- Ce test évite de casser le placement tant que yabai n'est pas encore en place ; dès
 -- qu'il l'est, HS bascule tout seul (les deux ne se marchent jamais dessus).
 local yabaiBin = "/opt/homebrew/bin/yabai"
--- On ne bascule en mode tiling que si yabai est installé ET que son service RÉPOND
--- (`query --displays` renvoie 0). Évite de désactiver window-snap si le binaire est là
--- mais le service pas encore démarré.
+-- On bascule en mode tiling dès que le binaire yabai est présent. On NE teste PLUS que
+-- le service réponde : au login, Hammerspoon démarre souvent AVANT que yabai soit prêt →
+-- le test échouait et chargeait le fallback window-snap, dont les raccourcis entraient en
+-- collision avec la navigation yabai (bug observé). Le service est prêt une fraction de
+-- seconde plus tard ; les commandes passent alors normalement.
 local yabaiUp = hs.fs.attributes(yabaiBin) ~= nil
-	and select(2, hs.execute(yabaiBin .. " -m query --displays 2>/dev/null")) == true
+	and true -- binaire présent suffit
 if yabaiUp then
 	hs.loadSpoon("Yabai")
 	spoon.Yabai.yabai = yabaiBin
