@@ -7,10 +7,12 @@ require("hs.ipc").cliInstall("/opt/homebrew")
 --   • si yabai est installé → tiling bsp + Spaces, piloté via Yabai.spoon.
 --       Fenêtres : ⌃⌥ flèches = focus, ⌃⌥⇧ flèches = échange, ⌃⌥⌘ flèches = warp (arbre).
 --       Agencement : ⌃⌥⌘ f/r/e = float/rotate/balance, ⌃⌥⌘ espace = cycle layout.
---       Spaces : ⌃⌥⌘ 1-9 = focus Space, +⇧ = envoyer la fenêtre ; ⌃⌥⌘ [ ] = Space préc./suiv.,
+--       Spaces : ⌃⌥⌘ 1-9 = focus Space, +⇧ = envoyer la fenêtre ; ⌃⌥⌘ , ; = Space préc./suiv.,
 --         +⇧ = y envoyer la fenêtre ; ⌃⌥⌘ n/w = créer/détruire un Space.
---       Écrans : ⌃⌥⌘ , . = focus écran préc./suiv., +⇧ = y envoyer la fenêtre,
---         ⌃⌥⇧ , . = déplacer le Space entier vers l'écran voisin.
+--       Écrans (touche « = » = l'autre écran) : ⌃⌥⌘ = focus écran, ⌃⌥⌘⇧ = y envoyer la
+--         fenêtre, ⌃⌥⇧ = déplacer le Space entier vers l'autre écran.
+--   Touches choisies pour AZERTY belge : , ; = sont natives du keymap ([ ] . ne le sont
+--   pas → tombent sur des touches mortes). Voir hs.keycodes.map / hs.keycodes.currentLayout().
 --   • sinon → fallback 100 % Hammerspoon : moitiés/quadrants/plein écran (window-snap).
 -- Ce test évite de casser le placement tant que yabai n'est pas encore en place ; dès
 -- qu'il l'est, HS bascule tout seul (les deux ne se marchent jamais dessus).
@@ -28,6 +30,7 @@ if yabaiUp then
 	local sp = { "ctrl", "alt", "cmd" } -- Spaces / écrans / layout / warp
 	local spSend = { "ctrl", "alt", "cmd", "shift" } -- envoyer la fenêtre (Space / écran)
 	local ybMap = {
+		-- Fenêtres
 		focus_west = { wmFocus, "left" },
 		focus_east = { wmFocus, "right" },
 		focus_north = { wmFocus, "up" },
@@ -36,30 +39,28 @@ if yabaiUp then
 		swap_east = { wmSwap, "right" },
 		swap_north = { wmSwap, "up" },
 		swap_south = { wmSwap, "down" },
+		-- Warp : ré-insertion de la fenêtre dans l'arbre (⌃⌥⌘ flèches)
+		warp_west = { sp, "left" },
+		warp_east = { sp, "right" },
+		warp_north = { sp, "up" },
+		warp_south = { sp, "down" },
+		-- Agencement
 		toggle_zoom = { wmFocus, "return" }, -- plein cadre (remplace l'ancien ⌃⌥⏎)
 		toggle_float = { sp, "f" }, -- (dé)flotter + centrer
+		layout_cycle = { sp, "space" }, -- bsp → stack → float → bsp
 		rotate = { sp, "r" }, -- pivoter l'agencement
 		balance = { sp, "e" }, -- rééquilibrer
-			layout_cycle = { sp, "space" }, -- bsp → stack → float → bsp
-			-- Warp : ré-insertion de la fenêtre dans l'arbre (⌃⌥⌘ flèches)
-			warp_west = { sp, "left" },
-			warp_east = { sp, "right" },
-			warp_north = { sp, "up" },
-			warp_south = { sp, "down" },
-			-- Spaces relatifs + gestion dynamique ([ ] = préc./suiv.)
-			space_prev = { sp, "[" }, -- Space précédent
-			space_next = { sp, "]" }, -- Space suivant
-			send_prev = { spSend, "[" }, -- envoyer la fenêtre au Space précédent
-			send_next = { spSend, "]" }, -- ... au Space suivant
-			space_create = { sp, "n" }, -- créer + focaliser un Space
-			space_destroy = { sp, "w" }, -- détruire le Space courant
-			-- Écrans ( , . = préc./suiv. ; le modif dit QUOI on déplace)
-			display_prev = { sp, "," }, -- focaliser l'écran précédent
-			display_next = { sp, "." }, -- ... suivant
-			send_display_prev = { spSend, "," }, -- envoyer la fenêtre → écran précédent
-			send_display_next = { spSend, "." }, -- ... suivant
-			space_display_prev = { wmSwap, "," }, -- déplacer le Space entier → écran précédent
-			space_display_next = { wmSwap, "." }, -- ... suivant
+		-- Spaces relatifs + gestion dynamique ( , ; = préc./suiv. )
+		space_prev = { sp, "," }, -- Space précédent
+		space_next = { sp, ";" }, -- Space suivant
+		send_prev = { spSend, "," }, -- envoyer la fenêtre au Space précédent
+		send_next = { spSend, ";" }, -- ... au Space suivant
+		space_create = { sp, "n" }, -- créer + focaliser un Space
+		space_destroy = { sp, "w" }, -- détruire le Space courant
+		-- Écrans (touche « = » = l'autre écran ; le modif dit QUOI on déplace)
+		display_next = { sp, "=" }, -- focaliser l'autre écran
+		send_display_next = { spSend, "=" }, -- y envoyer la fenêtre (+ suivre)
+		space_display_next = { wmSwap, "=" }, -- y déplacer le Space entier (+ suivre)
 	}
 	for n = 1, 9 do
 		ybMap["space_" .. n] = { sp, tostring(n) } -- ⌃⌥⌘ N   → focaliser le Space N
