@@ -48,6 +48,7 @@ if yabaiUp then
 		toggle_zoom = { wmFocus, "return" }, -- plein cadre (remplace l'ancien ⌃⌥⏎)
 		toggle_float = { sp, "f" }, -- (dé)flotter + centrer
 		layout_cycle = { sp, "space" }, -- bsp → stack → float → bsp
+			layout_toggle = { sp, "t" }, -- bascule pavage auto (bsp) ↔ manuel (float)
 		rotate = { sp, "r" }, -- pivoter l'agencement
 		balance = { sp, "e" }, -- rééquilibrer
 		-- Spaces relatifs + gestion dynamique ( , ; = préc./suiv. )
