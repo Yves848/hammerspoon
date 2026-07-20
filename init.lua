@@ -10,7 +10,12 @@ require("hs.ipc").cliInstall("/opt/homebrew")
 -- Ce test évite de casser le placement tant que yabai n'est pas encore en place ; dès
 -- qu'il l'est, HS bascule tout seul (les deux ne se marchent jamais dessus).
 local yabaiBin = "/opt/homebrew/bin/yabai"
-if hs.fs.attributes(yabaiBin) then
+-- On ne bascule en mode tiling que si yabai est installé ET que son service RÉPOND
+-- (`query --displays` renvoie 0). Évite de désactiver window-snap si le binaire est là
+-- mais le service pas encore démarré.
+local yabaiUp = hs.fs.attributes(yabaiBin) ~= nil
+	and select(2, hs.execute(yabaiBin .. " -m query --displays 2>/dev/null")) == true
+if yabaiUp then
 	hs.loadSpoon("Yabai")
 	spoon.Yabai.yabai = yabaiBin
 	local wmFocus = { "ctrl", "alt" } -- déplacer le focus (reprend l'ancien réflexe des snaps)
