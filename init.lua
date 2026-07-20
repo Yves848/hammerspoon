@@ -91,6 +91,35 @@ spoon.WindowStep:bindHotkeys({
 	resize_down = { wsResize, "down" },
 })
 
+-- Placement de fenêtres façon Magnet/Rectangle : ⌘⌥ + touche.
+--   Moitiés  : ⌘⌥ ← → ↑ ↓        Quarts : ⌘⌥ U I J K (haut-g/haut-d/bas-g/bas-d)
+--   Tiers    : ⌘⌥ D F G (g/centre/d), ⌘⌥ E / T (deux-tiers g/d)
+--   Plein    : ⌘⌥ ↩              Centré : ⌘⌥ C
+-- Sous yabai, la fenêtre est d'abord rendue flottante ; ⌃⌥⌘F la ré-intègre au tiling.
+hs.loadSpoon("WindowSnap")
+spoon.WindowSnap.yabai = yabaiBin
+-- spoon.WindowSnap.gap = 8         -- marge autour (optionnel)
+-- spoon.WindowSnap.centerRatio = 0.6
+spoon.WindowSnap:start()
+local sn = { "cmd", "alt" }
+spoon.WindowSnap:bindHotkeys({
+	left = { sn, "left" },
+	right = { sn, "right" },
+	top = { sn, "up" },
+	bottom = { sn, "down" },
+	top_left = { sn, "u" },
+	top_right = { sn, "i" },
+	bottom_left = { sn, "j" },
+	bottom_right = { sn, "k" },
+	left_third = { sn, "d" },
+	center_third = { sn, "f" },
+	right_third = { sn, "g" },
+	left_two_thirds = { sn, "e" },
+	right_two_thirds = { sn, "t" },
+	maximize = { sn, "return" },
+	center = { sn, "c" },
+})
+
 hs.loadSpoon("SwapKeys")
 spoon.SwapKeys:start()
 
