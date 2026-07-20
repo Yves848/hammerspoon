@@ -99,7 +99,7 @@ spoon.WindowStep:bindHotkeys({
 -- Sous yabai, la fenêtre est d'abord rendue flottante ; ⌃⌥⌘F la ré-intègre au tiling.
 hs.loadSpoon("WindowSnap")
 spoon.WindowSnap.yabai = yabaiBin
--- spoon.WindowSnap.gap = 8         -- marge autour (optionnel)
+spoon.WindowSnap.gap = 10 -- marge autour des fenêtres → l'anneau JankyBorders reste visible
 -- spoon.WindowSnap.centerRatio = 0.6
 spoon.WindowSnap:start()
 local sn = { "cmd", "alt" }
