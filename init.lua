@@ -46,7 +46,7 @@ if yabaiUp then
 		warp_south = { sp, "down" },
 		-- Agencement
 		toggle_zoom = { wmFocus, "return" }, -- plein cadre (remplace l'ancien ⌃⌥⏎)
-		toggle_float = { sp, "f" }, -- (dé)flotter + centrer
+		toggle_float = { sp, "f" }, -- (dé)flotter (géré ↔ flottant ; centrer = ⌘⌥C)
 		layout_cycle = { sp, "space" }, -- bsp → stack → float → bsp
 			layout_toggle = { sp, "t" }, -- bascule pavage auto (bsp) ↔ manuel (float)
 		rotate = { sp, "r" }, -- pivoter l'agencement
