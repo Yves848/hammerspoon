@@ -136,6 +136,11 @@ sc:bindHotkeys({
 	-- chooser = { { "ctrl", "alt" }, "shift", "b" }, -- palette Hammerspoon (optionnel)
 })
 
+-- Aide clavier : ⌃⌥H affiche/masque une fenêtre flottante listant tous les raccourcis
+-- (données par défaut dans le Spoon ; surchargeables via spoon.CheatSheet.sections).
+hs.loadSpoon("CheatSheet")
+spoon.CheatSheet:bindHotkeys({ toggle = { { "ctrl", "alt" }, "h" } })
+
 local menuIcon = nil
 hs.osascript.javascript('console.log("Hello")')
 hs.console.clearConsole()
