@@ -71,8 +71,9 @@ if yabaiUp then
 	end
 	spoon.Yabai:bindHotkeys(ybMap)
 else
-	-- Placement fenêtre en quadrants/moitiés/plein écran, 100 % Hammerspoon
-	require("window-snap")
+	-- Sans yabai (binaire absent), le placement reste assuré par WindowSnap.spoon,
+	-- chargé inconditionnellement plus bas (fonctionne avec ou sans yabai).
+	-- (Ancien fallback `require("window-snap")` retiré : couvert par WindowSnap.spoon.)
 end
 
 -- Déplacer / redimensionner la fenêtre active par pas (flèches, répétition si maintenu)
