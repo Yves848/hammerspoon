@@ -103,6 +103,7 @@ spoon.WindowStep:bindHotkeys({
 hs.loadSpoon("WindowSnap")
 spoon.WindowSnap.yabai = yabaiBin
 spoon.WindowSnap.gap = 10 -- marge autour des fenêtres → l'anneau JankyBorders reste visible
+spoon.WindowSnap.topInset = 40 -- réserve la hauteur de SketchyBar (⌘⌥↩ reste sous la barre)
 -- spoon.WindowSnap.centerRatio = 0.6
 spoon.WindowSnap:start()
 local sn = { "cmd", "alt" }
