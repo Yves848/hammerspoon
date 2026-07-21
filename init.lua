@@ -70,6 +70,9 @@ if yabaiUp then
 		ybMap["send_" .. n] = { spSend, tostring(n) } -- ⌃⌥⌘⇧ N → y envoyer la fenêtre
 	end
 	spoon.Yabai:bindHotkeys(ybMap)
+	-- Anneau de focus (JankyBorders) coloré selon l'état de la fenêtre : ambre = flottant,
+	-- bleu = tuilé (bsp). Ne reflète que la fenêtre active (limite de JankyBorders).
+	spoon.Yabai:startBorderSync()
 else
 	-- Sans yabai (binaire absent), le placement reste assuré par WindowSnap.spoon,
 	-- chargé inconditionnellement plus bas (fonctionne avec ou sans yabai).
