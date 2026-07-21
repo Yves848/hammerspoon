@@ -73,6 +73,17 @@ if yabaiUp then
 	-- Anneau de focus (JankyBorders) coloré selon l'état de la fenêtre : ambre = flottant,
 	-- bleu = tuilé (bsp). Ne reflète que la fenêtre active (limite de JankyBorders).
 	spoon.Yabai:startBorderSync()
+
+	-- Bureaux à labels STABLES + attribution d'apps : à l'ouverture, l'app atterrit sur son
+	-- bureau. Les 5 bureaux doivent exister (Mission Control) — yabai ne peut pas les créer
+	-- sur macOS 26 (SA). Le label suit le Space, pas l'index.
+	spoon.Yabai:setupDesktops({
+		{ label = "files", app = "^ForkLift$" }, -- bureau 1
+		{ label = "web", app = "^Google Chrome$" }, -- bureau 2
+		{ label = "term", app = "^Ghostty$" }, -- bureau 3
+		{ label = "code", app = "^Code$" }, -- bureau 4 (VS Code)
+		{ label = "misc" }, -- bureau 5 (autre, aucune app)
+	})
 else
 	-- Sans yabai (binaire absent), le placement reste assuré par WindowSnap.spoon,
 	-- chargé inconditionnellement plus bas (fonctionne avec ou sans yabai).
