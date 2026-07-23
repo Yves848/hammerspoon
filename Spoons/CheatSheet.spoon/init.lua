@@ -348,13 +348,17 @@ local BODY_MARGIN = 14
 -- on change d'onglet. Appelé une fois le chargement terminé.
 function obj:_fitHeight(scr, w)
   if not self._webview then return end
+  -- On force `display:block` en inline pour mesurer chaque panneau, PUIS on remet
+  -- systématiquement `display=''` : ne laisser aucun style inline, sinon il l'emporterait
+  -- sur la règle CSS `.tabpanel:not(.active){display:none}` et l'onglet inactif resterait
+  -- visible (empilé sous l'actif) au changement d'onglet.
   local js = [[(function(){
     var panels=document.querySelectorAll('.tabpanel'), max=0;
     for(var i=0;i<panels.length;i++){
-      var p=panels[i], was=p.classList.contains('active');
+      var p=panels[i];
       p.style.display='block';
       if(p.scrollHeight>max) max=p.scrollHeight;
-      if(!was) p.style.display='';
+      p.style.display='';
     }
     var panel=document.querySelector('.panel');
     var act=document.querySelector('.tabpanel.active');
