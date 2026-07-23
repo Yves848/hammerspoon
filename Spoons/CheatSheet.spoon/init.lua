@@ -97,12 +97,11 @@ obj.groups = {
     } },
 
   { title = "Ghostty",
-    subtitle = "Défauts Ghostty + vos binds perso (⌃R recharger, ⌘↓ quick terminal)",
+    subtitle = "Défauts Ghostty + config perso (~/.config/ghostty/config)",
     sections = {
       { title = "Config & application", accent = "#cba6f7", items = {
         { "⌘ ,",   "Ouvrir la config" },
-        { "⌘⇧ ,",  "Recharger la config" },
-        { "⌃ R",   "Recharger la config (perso)" },
+        { "⌘⇧ , / ⌘⇧ R", "Recharger la config" },
         { "⌘⇧ P",  "Palette de commandes" },
         { "⌘⌥ I",  "Inspector (basculer)" },
         { "⌘ Q",   "Quitter" },
@@ -129,7 +128,8 @@ obj.groups = {
         { "⌘ 1 … 8",     "Aller à l'onglet N" },
         { "⌘ 9",         "Dernier onglet" },
         { "⌃ ⇥ / ⌃⇧ ⇥",  "Onglet suivant / précédent" },
-        { "⌘⇧ ] / ⌘⇧ [", "Onglet suivant / précédent" },
+        { "⌘⇧ ← / →",    "Déplacer l'onglet" },
+        { "⌘⌃ T",        "Renommer l'onglet" },
         { "⌘⌥ W",        "Fermer l'onglet" },
       } },
       { title = "Fenêtres & plein écran", accent = "#89dceb", items = {
@@ -138,15 +138,18 @@ obj.groups = {
         { "⌘⇧ W",       "Fermer la fenêtre" },
         { "⌘⌥⇧ W",      "Tout fermer" },
         { "⌘ ↩ / ⌘⌃ F", "Plein écran" },
+        { "⌘⌃ M",       "Maximiser" },
+        { "⌘⌃ 0",       "Réinitialiser la taille" },
+        { "⌘⌃ P",       "Épingler au-dessus" },
       } },
       { title = "Splits (panneaux)", accent = "#f38ba8", items = {
         { "⌘ D",        "Split à droite" },
         { "⌘⇧ D",       "Split en bas" },
-        { "⌘ [ / ⌘ ]",  "Split précédent / suivant" },
         { "⌘⌥ ← → ↑ ↓", "Aller au split (direction)" },
         { "⌘⌃ ← → ↑ ↓", "Redimensionner le split" },
         { "⌘⌃ =",       "Égaliser les splits" },
         { "⌘⇧ ↩",       "Zoom split (basculer)" },
+        { "⌘⌥ T",       "Renommer le split" },
       } },
       { title = "Défilement & prompts", accent = "#fab387", items = {
         { "⌘ ↖ / ⌘ ↘",  "Haut / bas de l'historique" },
@@ -157,7 +160,7 @@ obj.groups = {
         { "⌘⇧ ↓",       "Prompt suivant" },
       } },
       { title = "Terminal rapide", accent = "#f5c2e7", items = {
-        { "⌘ ↓", "Quick terminal (basculer) — perso" },
+        { "⌘ ↓", "Quick terminal (basculer)" },
       } },
       { title = "Recherche", accent = "#b4befe", items = {
         { "⌘ F",          "Rechercher" },
@@ -173,11 +176,22 @@ obj.groups = {
         { "⌘ ⌫",        "Effacer la ligne (⌃U)" },
         { "⌥ ← / ⌥ →",  "Mot précédent / suivant" },
       } },
+      { title = "Affichage & divers", accent = "#f2cdcd", items = {
+        { "⌘⌃ O",  "Transparence du fond (on/off)" },
+        { "⌘⌃⇧ A", "Vue d'ensemble des onglets" },
+      } },
+      { title = "Pavé num. (Magic Keyboard)", accent = "#74c7ec", items = {
+        { "⌘ 1 … 8", "Aller à l'onglet N" },
+        { "⌘ 9",     "Dernier onglet" },
+        { "⌘ + / −", "Police plus grande / plus petite" },
+        { "⌘ ,",     "Taille de police par défaut" },
+        { "⌘ =",     "Égaliser les splits" },
+      } },
     } },
 }
 
 -- Séparateurs rendus en texte discret plutôt qu'en touche.
-local SEPARATORS = { ["/"] = true, ["·"] = true, ["…"] = true, ["+"] = true }
+local SEPARATORS = { ["/"] = true, ["·"] = true, ["…"] = true }
 
 -- Échappe le texte destiné au HTML (descriptions, libellés de touches).
 local function esc(s)
