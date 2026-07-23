@@ -49,10 +49,12 @@ if yabaiUp then
 		-- Agencement
 		toggle_zoom = { wmFocus, "return" }, -- plein cadre (remplace l'ancien ⌃⌥⏎)
 		toggle_float = { sp, "f" }, -- (dé)flotter (géré ↔ flottant ; centrer = ⌘⌥C)
-		layout_cycle = { sp, "space" }, -- bsp → stack → float → bsp
-			layout_toggle = { sp, "t" }, -- bascule pavage auto (bsp) ↔ manuel (float)
-		rotate = { sp, "r" }, -- pivoter l'agencement
-		balance = { sp, "e" }, -- rééquilibrer
+		-- Raccourcis de pavage DÉBRANCHÉS (mode 100 % float) : évite de repasser un
+		-- Space en bsp par erreur. Décommenter pour réactiver le tiling.
+		-- layout_cycle = { sp, "space" }, -- bsp → stack → float → bsp
+		-- layout_toggle = { sp, "t" }, -- bascule pavage auto (bsp) ↔ manuel (float)
+		-- rotate = { sp, "r" }, -- pivoter l'agencement (bsp uniquement)
+		-- balance = { sp, "e" }, -- rééquilibrer (bsp uniquement)
 		-- Spaces relatifs + gestion dynamique ( , ; = préc./suiv. )
 		space_prev = { sp, "," }, -- Space précédent
 		space_next = { sp, ";" }, -- Space suivant
@@ -109,35 +111,24 @@ spoon.WindowStep:bindHotkeys({
 	resize_down = { wsResize, "down" },
 })
 
--- Placement de fenêtres façon Magnet/Rectangle : ⌘⌥ + touche.
---   Moitiés  : ⌘⌥ ← → ↑ ↓        Quarts : ⌘⌥ U I J K (haut-g/haut-d/bas-g/bas-d)
---   Tiers    : ⌘⌥ D F G (g/centre/d), ⌘⌥ E / T (deux-tiers g/d)
---   Plein    : ⌘⌥ ↩              Centré : ⌘⌥ C
--- Sous yabai, la fenêtre est d'abord rendue flottante ; ⌃⌥⌘F la ré-intègre au tiling.
-hs.loadSpoon("WindowSnap")
-spoon.WindowSnap.yabai = yabaiBin
-spoon.WindowSnap.gap = 10 -- marge autour des fenêtres → l'anneau JankyBorders reste visible
-spoon.WindowSnap.topInset = 40 -- réserve la hauteur de SketchyBar (⌘⌥↩ reste sous la barre)
--- spoon.WindowSnap.centerRatio = 0.6
-spoon.WindowSnap:start()
-local sn = { "cmd", "alt" }
-spoon.WindowSnap:bindHotkeys({
-	left = { sn, "left" },
-	right = { sn, "right" },
-	top = { sn, "up" },
-	bottom = { sn, "down" },
-	top_left = { sn, "u" },
-	top_right = { sn, "i" },
-	bottom_left = { sn, "j" },
-	bottom_right = { sn, "k" },
-	left_third = { sn, "d" },
-	center_third = { sn, "f" },
-	right_third = { sn, "g" },
-	left_two_thirds = { sn, "e" },
-	right_two_thirds = { sn, "t" },
-	maximize = { sn, "return" },
-	center = { sn, "c" },
-})
+-- Placement de fenêtres : DÉLÉGUÉ À RECTANGLE (app externe), plus à WindowSnap.spoon.
+-- WindowSnap est débranché pour éviter deux systèmes de placement redondants/concurrents.
+-- Pour revenir au placement Hammerspoon (⌘⌥ + touche), décommenter le bloc ci-dessous.
+--   Moitiés  : ⌘⌥ ← → ↑ ↓        Quarts : ⌘⌥ U I J K
+--   Tiers    : ⌘⌥ D F G           Deux-tiers : ⌘⌥ E / T
+--   Plein    : ⌘⌥ ↩               Centré : ⌘⌥ C
+-- hs.loadSpoon("WindowSnap")
+-- spoon.WindowSnap.gap = 10
+-- spoon.WindowSnap.topInset = 0
+-- spoon.WindowSnap:start()
+-- local sn = { "cmd", "alt" }
+-- spoon.WindowSnap:bindHotkeys({
+-- 	left = { sn, "left" }, right = { sn, "right" }, top = { sn, "up" }, bottom = { sn, "down" },
+-- 	top_left = { sn, "u" }, top_right = { sn, "i" }, bottom_left = { sn, "j" }, bottom_right = { sn, "k" },
+-- 	left_third = { sn, "d" }, center_third = { sn, "f" }, right_third = { sn, "g" },
+-- 	left_two_thirds = { sn, "e" }, right_two_thirds = { sn, "t" },
+-- 	maximize = { sn, "return" }, center = { sn, "c" },
+-- })
 
 hs.loadSpoon("SwapKeys")
 spoon.SwapKeys:start()

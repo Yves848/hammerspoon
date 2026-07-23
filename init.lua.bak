@@ -1,0 +1,104 @@
+local logger = hs.logger.new("reload", "debug")
+
+-- CLI `hs` pour piloter/inspecter Hammerspoon depuis le terminal (debug)
+require("hs.ipc").cliInstall("/opt/homebrew")
+
+-- Placement fenêtre en quadrants/moitiés/plein écran, 100 % Hammerspoon
+require("window-snap")
+
+hs.loadSpoon("SwapKeys")
+spoon.SwapKeys:start()
+
+-- Pilotage des modules WLED (découverte mDNS + menubar 💡 + chooser ⌃⌥W)
+hs.loadSpoon("WLED")
+-- spoon.WLED.staticDevices = { { name = "Bureau", host = "192.168.50.50" } }
+spoon.WLED:start()
+
+local menuIcon = nil
+hs.osascript.javascript('console.log("Hello")')
+hs.console.clearConsole()
+
+function getLightData()
+	local res, body, headers = hs.http.get("http://192.168.50.201/data", nil)
+	local json = hs.json.decode(body)
+	hs.alert.show("Jour : " .. json["day"] .. " | Nuit : " .. json["night"])
+end
+
+function choosehandle(f)
+	if f ~= nil then
+		if f.uuid == "001" then
+			hs.alert.show(f.text)
+			hs.http.post("http://192.168.50.201/night")
+		end
+		if f.uuid == "002" then
+			hs.alert.show(f.text)
+			hs.http.post("http://192.168.50.201/day")
+		end
+		if f.uuid == "003" then
+			getLightData()
+		end
+	end
+end
+
+local image = hs.image.imageFromURL(
+	"https://png.pngtree.com/png-vector/20250117/ourlarge/pngtree-detailed-illustration-of-a-modern-and-colorful-keyboard-fun-vibrant-graphic-png-image_15235991.png"
+)
+
+logger.i("Initializing")
+local choices = {
+	{
+		["text"] = "Eteindre",
+		["subText"] = "Eteindre l'aquarium",
+		["uuid"] = "001",
+	},
+	{
+		["text"] = "Allumer",
+		["subText"] = "Allumer l'aquarium",
+		["uuid"] = "002",
+	},
+	{
+		["text"] = "Status éclairage",
+		["subText"] = "Obtenir l'état de l'éclairage",
+		["uuid"] = "003",
+	},
+}
+
+hs.hotkey.bind({ "ctrl", "alt" }, "A", function()
+	local choose = hs.chooser.new(choosehandle)
+	choose:choices(choices)
+	choose:show()
+end)
+
+-- Icône dans la barre de menu
+menuIcon = hs.menubar.new()
+
+local function updateMenu()
+	if spoon.SwapKeys:isEnabled() then
+		menuIcon:setTitle("🔁") -- Icône active
+		menuIcon:setTooltip("Remapping actif : </> ⇄ @/#")
+	else
+		menuIcon:setTitle("❌")
+		menuIcon:setTooltip("Remapping désactivé")
+	end
+end
+
+local function toggleRemap()
+	spoon.SwapKeys:toggle()
+	updateMenu()
+end
+
+if menuIcon then
+	menuIcon:setClickCallback(toggleRemap)
+	updateMenu()
+end
+
+-- Raccourci pour recharger Hammerspoon
+hs.hotkey.bind({ "cmd", "alt", "ctrl" }, "R", function()
+	--hs.alert.show("Config rechargée")
+	hs.notify.new({ title = "Hammerspoon", informativeText = "Relolad configutation" }):send()
+	hs.reload()
+end)
+
+-- hs.hotkey.bind({ "cmd" }, "T", function()
+-- 	hs.execute('open -n "/Applications/Ghostty.app"')
+-- end)
