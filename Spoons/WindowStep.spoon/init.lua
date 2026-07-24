@@ -66,11 +66,26 @@ function obj:bindHotkeys(mapping)
     resize_up    = function() self:resize(0, -s) end, -- moins haut
     resize_down  = function() self:resize(0, s) end,  -- plus haut
   }
+  self._hotkeys = self._hotkeys or {}
   for name, spec in pairs(mapping or {}) do
     local fn = actions[name]
     if fn then
       -- pressedfn + repeatfn = fn -> l'action se répète si la touche est maintenue.
-      hs.hotkey.bind(spec[1], spec[2], fn, nil, fn)
+      -- On conserve l'objet hotkey pour pouvoir l'activer/désactiver ensuite.
+      self._hotkeys[name] = hs.hotkey.bind(spec[1], spec[2], fn, nil, fn)
+    end
+  end
+  return self
+end
+
+--- Active (enabled=true) ou désactive (enabled=false) un sous-ensemble de
+--- hotkeys, désignés par leur nom (move_left, resize_up, …). Un hotkey désactivé
+--- laisse la combinaison atteindre l'application au premier plan.
+function obj:setEnabled(names, enabled)
+  for _, name in ipairs(names) do
+    local hk = self._hotkeys and self._hotkeys[name]
+    if hk then
+      if enabled then hk:enable() else hk:disable() end
     end
   end
   return self

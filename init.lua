@@ -111,6 +111,26 @@ spoon.WindowStep:bindHotkeys({
 	resize_down = { wsResize, "down" },
 })
 
+-- Passe-plat pour Ghostty : ⌘⌃+flèches sert aussi à Ghostty (resize_split).
+-- Un hotkey global avale la touche avant l'app ; on désactive donc le resize
+-- global de WindowStep quand Ghostty est au premier plan, pour laisser les
+-- ⌘⌃+flèches atteindre Ghostty, et on le réactive dès qu'une autre app l'est.
+-- (Le déplacement Shift+Alt+flèches ne rentre pas en conflit : on n'y touche pas.)
+local wsGhosttyResizeKeys = { "resize_left", "resize_right", "resize_up", "resize_down" }
+local function wsApplyGhostty(app)
+	local isGhostty = app and app:bundleID() == "com.mitchellh.ghostty"
+	spoon.WindowStep:setEnabled(wsGhosttyResizeKeys, not isGhostty)
+end
+-- Rangé dans le spoon (retenu par la table globale `spoon`) pour éviter le GC.
+spoon.WindowStep._ghosttyWatcher = hs.application.watcher.new(function(_, event, app)
+	if event == hs.application.watcher.activated then
+		wsApplyGhostty(app)
+	end
+end)
+spoon.WindowStep._ghosttyWatcher:start()
+-- État initial selon l'app active au chargement de la config.
+wsApplyGhostty(hs.application.frontmostApplication())
+
 -- Placement de fenêtres : DÉLÉGUÉ À RECTANGLE (app externe), plus à WindowSnap.spoon.
 -- WindowSnap est débranché pour éviter deux systèmes de placement redondants/concurrents.
 -- Pour revenir au placement Hammerspoon (⌘⌥ + touche), décommenter le bloc ci-dessous.
