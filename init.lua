@@ -169,12 +169,14 @@ spoon.WLED:start()
 -- et demande elle-même l'autorisation « Réseau local ». Hammerspoon ne fait que DÉCLENCHER
 -- des actions via l'API HTTP locale (127.0.0.1) → aucune permission réseau requise côté HS.
 local led = hs.loadSpoon("LedControl")
--- led.baseUrl = "http://127.0.0.1:8787" -- optionnel (défaut)
+-- led.baseUrl = "http://192.168.50.207:8787" -- optionnel (défaut : le LXC)
 led:bindHotkeys({
 	show = { { "ctrl", "alt" }, "l" }, -- ouvre la fenêtre de l'app LedControl
-	travail = { { "ctrl", "alt" }, "1" }, -- scène « travail »
-	detente = { { "ctrl", "alt" }, "2" }, -- scène « détente »
-	off = { { "ctrl", "alt" }, "0" }, -- scène « off » (tout éteindre)
+	-- Lettres mnémoniques (AZERTY-friendly) plutôt que 1/2/0 : la rangée des
+	-- chiffres exige ⇧ sur AZERTY et le hotkey ne captait que la touche du haut.
+	travail = { { "ctrl", "alt" }, "t" }, -- scène « travail »
+	detente = { { "ctrl", "alt" }, "d" }, -- scène « détente »
+	off = { { "ctrl", "alt" }, "o" }, -- scène « off » (tout éteindre)
 	-- chooser = { { "ctrl", "alt" }, "p" }, -- palette clavier (optionnel, décommentez pour l'ajouter)
 })
 
