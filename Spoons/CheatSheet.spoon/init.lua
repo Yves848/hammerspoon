@@ -188,6 +188,51 @@ obj.groups = {
         { "⌘ =",     "Égaliser les splits" },
       } },
     } },
+
+  { title = "Neovim (LazyVim)",
+    subtitle = "Défauts LazyVim · leader = Espace, localleader = \\",
+    sections = {
+      { title = "Fenêtres (splits)", accent = "#cba6f7", items = {
+        { "⌃ h j k l",  "Aller à la fenêtre gauche / bas / haut / droite" },
+        { "⌃ ← → ↑ ↓",  "Redimensionner la fenêtre" },
+        { "Espace -",   "Split horizontal (dessous)" },
+        { "Espace |",   "Split vertical (à droite)" },
+        { "Espace w d", "Fermer la fenêtre" },
+        { "Espace w m", "Zoom (agrandir / restaurer)" },
+        { "Espace u z", "Mode Zen" },
+      } },
+      { title = "Buffers", accent = "#89b4fa", items = {
+        { "⇧ h / ⇧ l",  "Buffer précédent / suivant" },
+        { "[b / ]b",    "Buffer précédent / suivant" },
+        { "Espace b j", "Pick — sauter à un buffer par lettre" },
+        { "Espace b b", "Basculer vers le buffer alterné" },
+        { "Espace b d", "Fermer le buffer (garde la fenêtre)" },
+        { "Espace b o", "Fermer les autres buffers" },
+        { "[B / ]B",    "Déplacer le buffer dans la barre" },
+      } },
+      { title = "Onglets", accent = "#a6e3a1", items = {
+        { "Espace ⇥ ⇥",         "Nouvel onglet" },
+        { "Espace ⇥ ] / ⇥ [",   "Onglet suivant / précédent" },
+        { "Espace ⇥ f / ⇥ l",   "Premier / dernier onglet" },
+        { "Espace ⇥ d",         "Fermer l'onglet" },
+        { "Espace ⇥ o",         "Fermer les autres onglets" },
+        { "g t / g T",          "Onglet suivant / précédent (Vim)" },
+      } },
+      { title = "Recherche & navigation", accent = "#94e2d5", items = {
+        { "Espace Espace", "Chercher un fichier" },
+        { "Espace ,",      "Chercher parmi les buffers ouverts" },
+        { "Espace e",      "Explorateur de fichiers" },
+        { "Espace s g",    "Rechercher dans le projet (grep)" },
+        { "s",             "Saut à l'écran (flash — 2 lettres)" },
+        { "⌃ o / ⌃ i",     "Reculer / avancer (jumplist)" },
+      } },
+      { title = "Aide & divers", accent = "#f9e2af", items = {
+        { "Espace",     "which-key — menu contextuel des raccourcis" },
+        { "Espace c f", "Formater le fichier" },
+        { "Espace l",   "Lazy (gestionnaire de plugins)" },
+        { "Espace q q", "Quitter tout" },
+      } },
+    } },
 }
 
 -- Séparateurs rendus en texte discret plutôt qu'en touche.
