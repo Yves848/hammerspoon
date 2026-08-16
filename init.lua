@@ -119,6 +119,23 @@ sc:bindHotkeys({
 hs.loadSpoon("CheatSheet")
 spoon.CheatSheet:bindHotkeys({ toggle = { { "ctrl", "alt" }, "h" } })
 
+-- prompter : ⌥Espace puis une séquence de lettres → les actions de l'app au premier plan,
+-- façon which-key. Enchaîné, l'action part sans rien afficher ; après ~300 ms d'hésitation,
+-- une popup souffle la suite. Les menus sont lus automatiquement, une surcouche optionnelle
+-- (~/.config/prompter/<bundle-id>.json) permet d'épingler des lettres, masquer, regrouper.
+--   `make selftest` (dans le dépôt) imprime l'arbre et les lettres choisies sans rien exécuter.
+-- ⚠️ Le Spoon est un LIEN SYMBOLIQUE vers le worktree ~/git/macos/prompter/.claude/worktrees/
+--    prompter-v0, tant que la MR !1 n'est pas fusionnée — il n'est donc PAS suivi en git,
+--    contrairement à Synology.spoon qui pointe vers un chemin stable. À re-pointer sur
+--    ~/git/macos/prompter/Spoons/Prompter.spoon après la fusion, puis à commiter.
+--    D'ici là le chargement est gardé : si le lien casse, on perd prompter, pas la config.
+if hs.fs.attributes(hs.configdir .. "/Spoons/Prompter.spoon") then
+	hs.loadSpoon("Prompter")
+	spoon.Prompter:start()
+else
+	hs.printf("[config] Prompter.spoon introuvable — prompter n'est pas chargé")
+end
+
 local menuIcon = nil
 hs.osascript.javascript('console.log("Hello")')
 hs.console.clearConsole()
