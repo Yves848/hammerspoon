@@ -136,6 +136,23 @@ else
 	hs.printf("[config] Prompter.spoon introuvable — prompter n'est pas chargé")
 end
 
+-- Import automatique d'une carte d'appareil photo vers le NAS.
+-- Au montage d'un volume portant un DCIM/, une notification annonce son
+-- contenu ; un clic monte le partage `photo` et ouvre Ghostty sur l'outil
+-- `photo-import`, qui range les fichiers en Appareil/Type/Année/Mois.
+--
+-- Le Spoon est un LIEN SYMBOLIQUE vers ~/git/config/helpers/, posé par
+-- ConfigKit (composant `photo-import`) — comme Synology.spoon, il pointe un
+-- chemin stable, donc il est suivi en git ici. Le chargement reste gardé : si
+-- le composant n'est pas déployé sur ce poste, on perd l'import automatique,
+-- pas la configuration.
+if hs.fs.attributes(hs.configdir .. "/Spoons/PhotoImport.spoon") then
+	hs.loadSpoon("PhotoImport")
+	spoon.PhotoImport:start()
+else
+	hs.printf("[config] PhotoImport.spoon introuvable — l'import photo n'est pas chargé")
+end
+
 local menuIcon = nil
 hs.osascript.javascript('console.log("Hello")')
 hs.console.clearConsole()
