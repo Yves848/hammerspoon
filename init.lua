@@ -238,6 +238,39 @@ hs.hotkey.bind({ "cmd", "alt", "ctrl" }, "R", function()
 	hs.reload()
 end)
 
+-- ForkLift sur le repertoire du contexte : Caps+F -> F19 via Karabiner.
+-- AXDocument de la fenetre au premier plan porte le cwd reel de l'onglet Ghostty
+-- (OSC 7). Toute appli qui renseigne cet attribut marche sans code dedie.
+
+-- Rend le repertoire a ouvrir, ou nil + la raison. Ne lance rien : c'est le
+-- point de diagnostic, appelable par `hs -c 'return ForkliftIci()'`.
+function ForkliftIci()
+    local win = hs.window.focusedWindow()
+    if not win then return nil, "aucune fenetre au premier plan" end
+    local element = hs.axuielement.windowElement(win)
+    local doc = element and element:attributeValue("AXDocument")
+    if type(doc) ~= "string" or doc == "" then
+        return nil, (win:application():name() or "?") .. " n'expose pas de repertoire"
+    end
+    -- urlParts decode les %XX : sans lui, un chemin accentue ou espace echouerait.
+    local chemin = hs.http.urlParts(doc).path
+    if not chemin then return nil, "URL illisible : " .. doc end
+    local attrs = hs.fs.attributes(chemin)
+    if attrs and attrs.mode == "directory" then return chemin end
+    local parent = chemin:match("^(.*)/[^/]*$")
+    if parent == nil or parent == "" then parent = "/" end
+    return parent
+end
+
+hs.hotkey.bind({}, "F19", function()
+    local chemin, raison = ForkliftIci()
+    local args = { "-a", "/Applications/ForkLift.app" }
+    if chemin then args[3] = chemin else hs.alert.show("ForkLift : " .. raison) end
+    hs.task.new("/usr/bin/open", function(code, _, err)
+        if code ~= 0 then hs.alert.show("ForkLift : " .. (err or "ouverture impossible")) end
+    end, args):start()
+end)
+
 -- hs.hotkey.bind({ "cmd" }, "T", function()
 -- 	hs.execute('open -n "/Applications/Ghostty.app"')
 -- end)
