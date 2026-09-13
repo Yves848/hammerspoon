@@ -1,2 +1,4 @@
 .DS_Store
 *.bak
+init.lua.avant-*
+init.lua.before-*
