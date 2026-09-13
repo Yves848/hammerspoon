@@ -1,21 +1,18 @@
 --- === LedControl ===
 ---
---- Déclencheur clavier de l'app LedControl (C# / Avalonia).
+--- Déclencheur clavier de LedControl.
 ---
---- L'app est une **application de bureau autonome** : elle a son propre menu (tray), sa fenêtre,
---- et demande elle-même l'autorisation « Réseau local » macOS. Hammerspoon ne fait que
---- **déclencher des actions** via l'API HTTP locale que l'app héberge (`http://127.0.0.1:8787`),
---- et **la démarre si elle ne tourne pas** (chaque raccourci vérifie d'abord qu'elle répond).
+--- Le **service LedControl** (headless, sur le LXC) est l'autorité unique : il tourne 24/7 et
+--- expose l'API HTTP `http://192.168.50.207:8787`. Hammerspoon déclenche les actions directement
+--- sur ce service (plus besoin que l'app de bureau tourne). L'app de bureau (« spoon ») n'est
+--- qu'une télécommande visuelle ; `show` la fait remonter via son schéma d'URL `ledcontrol://show`.
 ---
 --- Installation :
 ---   cp -r hammerspoon/LedControl.spoon ~/.hammerspoon/Spoons/
----   # et installer l'app une fois : build/mac/bundle.sh puis
----   #   cp -R build/mac/dist/LedControl.app /Applications/
 --- Dans ~/.hammerspoon/init.lua :
 ---   local led = hs.loadSpoon("LedControl")
----   -- led.appName = "LedControl"            -- nom pour `open -a` (défaut)
----   -- led.appPath = "/Applications/LedControl.app"  -- alternative : chemin absolu du bundle
----   -- led.baseUrl = "http://127.0.0.1:8787" -- optionnel (défaut)
+---   -- led.baseUrl = "http://192.168.50.207:8787" -- optionnel (défaut : le LXC)
+---   -- led.showUrl = "ledcontrol://show"          -- URL pour faire remonter la fenêtre (défaut)
 ---   led:bindHotkeys({
 ---     show    = {{"ctrl", "alt"}, "L"},             -- ouvre la fenêtre de l'app
 ---     all_on  = {{"cmd", "alt", "ctrl"}, "L"},
@@ -28,15 +25,16 @@ local obj = {}
 obj.__index = obj
 
 obj.name = "LedControl"
-obj.version = "0.4.0"
+obj.version = "0.5.0"
 obj.author = "ledcontrol"
 obj.license = "MIT"
 
-obj.baseUrl = "http://127.0.0.1:8787"
+-- Le service LedControl (LXC). Surchargeable depuis ~/.hammerspoon/init.lua.
+obj.baseUrl = "http://192.168.50.207:8787"
 
--- Démarrage automatique si l'app ne répond pas :
-obj.appName = "LedControl"   -- utilisé par `open -a <appName>` (bundle dans /Applications)
-obj.appPath = nil            -- alternative : chemin absolu vers LedControl.app
+-- Pour `show` : ouvre l'URL `ledcontrol://show`, que l'app agent gère en faisant remonter sa
+-- fenêtre (et se lance si besoin). Plus fiable qu'`open -a` pour une app sans icône Dock.
+obj.showUrl = "ledcontrol://show"
 
 -- --- HTTP helpers ---------------------------------------------------------
 
@@ -62,67 +60,26 @@ function obj:_post(path, cb)
     end)
 end
 
--- --- Démarrage automatique de l'app ---------------------------------------
+-- --- Actions (directes sur le service, toujours disponible) ----------------
 
--- L'API répond-elle ? (un statut négatif = connexion refusée → app absente)
-function obj:_alive(cb)
-  hs.http.asyncGet(self.baseUrl .. "/api/scenes", nil, function(status) cb(status == 200) end)
+-- Fait remonter la fenêtre de l'app de bureau (la démarre si besoin) via son schéma d'URL.
+-- Aucun appel au service : le service headless du LXC ne peut pas afficher de fenêtre sur le Mac.
+function obj:show()
+  hs.execute('/usr/bin/open "' .. self.showUrl .. '"')
 end
 
-function obj:_launch()
-  local cmd = self.appPath
-      and ('/usr/bin/open "' .. self.appPath .. '"')
-      or ('/usr/bin/open -a "' .. self.appName .. '"')
-  hs.execute(cmd)
-end
-
--- Garantit que l'app tourne, puis exécute fn(). La démarre au besoin et attend qu'elle réponde.
-function obj:ensureRunning(fn)
-  self:_alive(function(ok)
-    if ok then fn(); return end
-    self:_launch()
-    local tries = 0
-    local timer
-    timer = hs.timer.doEvery(0.5, function()
-      tries = tries + 1
-      self:_alive(function(alive)
-        if alive then
-          timer:stop()
-          fn()
-        elseif tries >= 24 then   -- ~12 s
-          timer:stop()
-          hs.alert.show("LedControl : démarrage impossible")
-        end
-      end)
-    end)
-  end)
-end
-
--- --- Actions (chacune démarre l'app si besoin) ----------------------------
-
--- Ouvre (fait remonter) la fenêtre de l'app native. La démarre si besoin.
-function obj:show() self:ensureRunning(function() self:_post("/api/show") end) end
-
-function obj:allOn() self:ensureRunning(function() self:_post("/api/all/on") end) end
-function obj:allOff() self:ensureRunning(function() self:_post("/api/all/off") end) end
-function obj:toggleDevice(id)
-  self:ensureRunning(function() self:_post("/api/devices/" .. id .. "/toggle") end)
-end
+function obj:allOn() self:_post("/api/all/on") end
+function obj:allOff() self:_post("/api/all/off") end
+function obj:toggleDevice(id) self:_post("/api/devices/" .. id .. "/toggle") end
 function obj:applyScene(name)
-  self:ensureRunning(function()
-    self:_post("/api/scenes/" .. hs.http.encodeForQuery(name), function()
-      hs.alert.show("Scène : " .. name)
-    end)
+  self:_post("/api/scenes/" .. hs.http.encodeForQuery(name), function()
+    hs.alert.show("Scène : " .. name)
   end)
 end
 
 -- --- Chooser (palette au clavier) -----------------------------------------
 
 function obj:showChooser()
-  self:ensureRunning(function() self:_showChooserNow() end)
-end
-
-function obj:_showChooserNow()
   -- Récupère appareils + scènes puis affiche une palette de sélection.
   self:_get("/api/devices", function(devices)
     self:_get("/api/scenes", function(scenes)
@@ -168,7 +125,7 @@ end
 
 function obj:bindHotkeys(mapping)
   local actions = {
-    show = function() self:show() end,       -- ouvre la fenêtre de l'app native
+    show = function() self:show() end,       -- ouvre la fenêtre de l'app de bureau
     all_on = function() self:allOn() end,
     all_off = function() self:allOff() end,
     chooser = function() self:showChooser() end,
