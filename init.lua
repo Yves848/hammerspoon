@@ -93,7 +93,7 @@ led:bindHotkeys({
 	-- chiffres exige ⇧ sur AZERTY et le hotkey ne captait que la touche du haut.
 	travail = { { "ctrl", "alt" }, "t" }, -- scène « travail »
 	detente = { { "ctrl", "alt" }, "d" }, -- scène « détente »
-	off = { { "ctrl", "alt" }, "o" }, -- scène « off » (tout éteindre)
+	off = { { "ctrl", "alt" }, "o" },    -- scène « off » (tout éteindre)
 	-- chooser = { { "ctrl", "alt" }, "p" }, -- palette clavier (optionnel, décommentez pour l'ajouter)
 })
 
@@ -142,16 +142,6 @@ end
 -- `photo-import`, qui range les fichiers en Appareil/Type/Année/Mois.
 --
 -- Le Spoon est un LIEN SYMBOLIQUE vers ~/git/config/helpers/, posé par
--- ConfigKit (composant `photo-import`) — comme Synology.spoon, il pointe un
--- chemin stable, donc il est suivi en git ici. Le chargement reste gardé : si
--- le composant n'est pas déployé sur ce poste, on perd l'import automatique,
--- pas la configuration.
-if hs.fs.attributes(hs.configdir .. "/Spoons/PhotoImport.spoon") then
-	hs.loadSpoon("PhotoImport")
-	spoon.PhotoImport:start()
-else
-	hs.printf("[config] PhotoImport.spoon introuvable — l'import photo n'est pas chargé")
-end
 
 local menuIcon = nil
 hs.osascript.javascript('console.log("Hello")')
@@ -238,12 +228,76 @@ hs.hotkey.bind({ "cmd", "alt", "ctrl" }, "R", function()
 	hs.reload()
 end)
 
--- ForkLift sur le repertoire du contexte : Caps+F -> F19 via Karabiner.
--- AXDocument de la fenetre au premier plan porte le cwd reel de l'onglet Ghostty
--- (OSC 7). Toute appli qui renseigne cet attribut marche sans code dedie.
+-- gproj natif : Caps+P -> F18 via Karabiner.
+-- Cibler le bundle installé évite une ancienne copie enregistrée par Launch Services.
+-- -g laisse gproj décider du focus avant toute activation par Launch Services.
+hs.hotkey.bind({}, "F18", function()
+    local app = os.getenv("HOME") .. "/Applications/gproj.app"
+    if not hs.fs.attributes(app) then
+        hs.alert.show("gproj : application absente dans ~/Applications")
+        return
+    end
+    hs.task.new("/usr/bin/open", function(code, _, err)
+        if code ~= 0 then hs.alert.show("gproj : " .. (err or "ouverture impossible")) end
+    end, {"-g", "-a", app, "gproj://open"}):start()
+end)
 
--- Rend le repertoire a ouvrir, ou nil + la raison. Ne lance rien : c'est le
--- point de diagnostic, appelable par `hs -c 'return ForkliftIci()'`.
+
+-- Persistance de la géométrie des fenêtres projet.
+local gprojBridgePath = os.getenv("HOME") .. "/.local/share/gproj/bridge.lua"
+if hs.fs.attributes(gprojBridgePath) then
+	GprojBridge = dofile(gprojBridgePath)
+end
+
+-- Remplace par les sequences natives de Ghostty : keybind = f20>...
+-- dans config/ghostty/config du depot config. Tant que ce Spoon est
+-- charge, hs.hotkey capte F20 AVANT Ghostty et les sequences natives
+-- restent mortes, sans le moindre message. Le Spoon reste sur disque,
+-- reactivable en decommentant ces deux lignes.
+-- hs.loadSpoon("GhosttyLeader")
+-- spoon.GhosttyLeader:start()
+
+-- hs.hotkey.bind({ "cmd" }, "T", function()
+-- 	hs.execute('open -n "/Applications/Ghostty.app"')
+-- end)
+
+-- Caps+Shift+P -> F17 : sélecteur des fenêtres Ghostty ouvertes par gproj.
+-- F17 et non F19 : F19 sert deja a ForkLift (Caps+F). La regle Karabiner
+-- « p + shift mandatory » doit preceder celle qui capte « p » avec optional:["any"],
+-- sinon Shift est absorbe et F18 est emis a la place.
+hs.hotkey.bind({}, "F17", function()
+    local app = os.getenv("HOME") .. "/Applications/gproj.app"
+    if not hs.fs.attributes(app) then
+        hs.alert.show("gproj : application absente dans ~/Applications")
+        return
+    end
+    hs.task.new("/usr/bin/open", function(code, _, err)
+        if code ~= 0 then hs.alert.show("gproj : " .. (err or "ouverture impossible")) end
+    end, {"-g", "-a", app, "gproj://windows"}):start()
+end)
+-- >>> configkit:configkit >>>
+-- Lignes appartenant au depot config. Tout le reste d'init.lua appartient au
+-- depot hammerspoon : voir l'ADR 0031.
+
+-- PhotoImport : le Spoon est un lien pose par config, mais sa ligne de
+-- chargement vivait jusqu'ici dans l'autre depot faute de pouvoir ecrire un
+-- bloc gere dans du Lua. Elle rejoint son proprietaire.
+--
+-- Le :start() n'est pas decoratif : sans lui le Spoon se charge et ne fait
+-- RIEN, sans erreur ni message -- l'import photo se tait et l'on cherche
+-- longtemps pourquoi. Le repli hs.printf sert la meme fin : dire que le
+-- composant n'est pas deploye plutot que de le laisser deviner.
+if hs.fs.attributes(hs.configdir .. "/Spoons/PhotoImport.spoon") then
+    hs.loadSpoon("PhotoImport")
+    spoon.PhotoImport:start()
+else
+    hs.printf("[config] PhotoImport.spoon introuvable -- l'import photo n'est pas charge")
+end
+
+-- ForkLift sur le repertoire du contexte : Caps+F -> F19 via Karabiner.
+-- AXDocument de la fenetre au premier plan porte le cwd reel de l'onglet
+-- Ghostty (OSC 7). Toute appli qui renseigne cet attribut marche sans code
+-- dedie.
 function ForkliftIci()
     local win = hs.window.focusedWindow()
     if not win then return nil, "aucune fenetre au premier plan" end
@@ -252,7 +306,6 @@ function ForkliftIci()
     if type(doc) ~= "string" or doc == "" then
         return nil, (win:application():name() or "?") .. " n'expose pas de repertoire"
     end
-    -- urlParts decode les %XX : sans lui, un chemin accentue ou espace echouerait.
     local chemin = hs.http.urlParts(doc).path
     if not chemin then return nil, "URL illisible : " .. doc end
     local attrs = hs.fs.attributes(chemin)
@@ -270,7 +323,4 @@ hs.hotkey.bind({}, "F19", function()
         if code ~= 0 then hs.alert.show("ForkLift : " .. (err or "ouverture impossible")) end
     end, args):start()
 end)
-
--- hs.hotkey.bind({ "cmd" }, "T", function()
--- 	hs.execute('open -n "/Applications/Ghostty.app"')
--- end)
+-- <<< configkit:configkit <<<
